@@ -9,6 +9,7 @@ import {Arrow} from './Arrow'
 export class ExampleApp extends gfx.GfxApp
 {   
     private simulationTime = 0;
+    private arrow = new Arrow();
     private bird = new gfx.Mesh3();
     private birdRadius = 2;
     private targetSize = new gfx.Vector3(3, 12, 20);
@@ -18,8 +19,6 @@ export class ExampleApp extends gfx.GfxApp
     private target3Pos = new gfx.Vector3(23, 18, -35);
 
 
-    private arrow: Arrow = new Arrow();
-
     // --- Create the ExampleApp class ---
     constructor()
     {
@@ -27,17 +26,6 @@ export class ExampleApp extends gfx.GfxApp
         super();
     }
 
-    calcBirdPos(t: number): gfx.Vector3 {
-        const e = t / 4.0;
-        const x = e * 52.0 - 30.0;
-        const y = 30.0 * (-e * e + 1.2 * e) + 5.0;
-        const z = -35.0;
-        return new gfx.Vector3(x, y, z);
-    }
-
-    calcBirdVel(t: number): gfx.Vector3 {
-        return gfx.Vector3.subtract(this.calcBirdPos(t + 0.5), this.calcBirdPos(t - 0.5));
-    }
 
     // --- Initialize the graphics scene ---
     createScene(): void
@@ -96,13 +84,27 @@ export class ExampleApp extends gfx.GfxApp
 
         // bird
         this.bird = gfx.Geometry3Factory.createSphere(this.birdRadius);
-        this.scene.add(this.bird);
-        this.bird.position = this.calcBirdPos(this.simulationTime);
         this.bird.material.setColor(gfx.Color.RED);
+        this.scene.add(this.bird);
 
         // arrow
         this.arrow = new Arrow(gfx.Color.YELLOW);
         this.scene.add(this.arrow);
+
+        this.reset();
+    }
+
+
+    calcBirdPos(t: number): gfx.Vector3 {
+        const e = t / 4.0;
+        const x = e * 52.0 - 30.0;
+        const y = 30.0 * (-e * e + 1.2 * e) + 5.0;
+        const z = -35.0;
+        return new gfx.Vector3(x, y, z);
+    }
+
+    calcBirdVel(t: number): gfx.Vector3 {
+        return gfx.Vector3.subtract(this.calcBirdPos(t + 0.5), this.calcBirdPos(t - 0.5));
     }
 
 
@@ -110,13 +112,12 @@ export class ExampleApp extends gfx.GfxApp
     update(deltaTime: number): void 
     {
         this.simulationTime += deltaTime;
-        if (this.simulationTime > 6) {
-            this.simulationTime = 0;
-            this.targets.forEach((target) => {
-                target.visible = true;
-            });
-        }
+
         this.bird.position = this.calcBirdPos(this.simulationTime);
+
+        if (this.bird.position.y < 0) {
+            this.reset();
+        }
 
         this.arrow.position = this.bird.position;
         this.arrow.vector = this.calcBirdVel(this.simulationTime);
@@ -144,5 +145,13 @@ export class ExampleApp extends gfx.GfxApp
         } else {
             return false;
         }
+    }
+
+    reset(): void
+    {
+        this.simulationTime = 0;
+        this.targets.forEach((target) => {
+            target.visible = true;
+        });
     }
 }
