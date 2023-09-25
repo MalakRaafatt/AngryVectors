@@ -1,19 +1,18 @@
 /** CSci-4611 Example Code
  * Copyright 2023+ Regents of the University of Minnesota
  * Please do not distribute beyond the CSci-4611 course
- */
+ * 
+ * Prof. Dan Keefe (dfk@umn.edu)
+*/
 
 import * as gfx from 'gophergfx'
-import {Arrow} from './Arrow'
 
 export class ExampleApp extends gfx.GfxApp
 {   
     private simulationTime = 0;
-    private arrow = new Arrow();
     private bird = new gfx.Mesh3();
     private birdRadius = 2;
     private targetSize = new gfx.Vector3(3, 12, 20);
-    private targets: gfx.Mesh3[] = [];
     private target1Pos = new gfx.Vector3(21, 6, -35);
     private target2Pos = new gfx.Vector3(25, 6, -35);
     private target3Pos = new gfx.Vector3(23, 18, -35);
@@ -52,49 +51,56 @@ export class ExampleApp extends gfx.GfxApp
         const ground = gfx.Geometry3Factory.createBox(160, 4, 200);
         this.scene.add(ground);
         ground.position = new gfx.Vector3(0, -2, -50);
-        ground.material.setColor(new gfx.Color(0.3, 0.9, 0.4));
+        const groundMaterial = new gfx.PhongMaterial();
+        groundMaterial.setColor(new gfx.Color(0.3, 0.9, 0.4));
+        ground.material = groundMaterial;
 
         // 3 targets
         const target1 = gfx.Geometry3Factory.createBox(
             this.targetSize.x, this.targetSize.y, this.targetSize.z);
         this.scene.add(target1);
         target1.position = this.target1Pos;
-        target1.material.setColor(new gfx.Color(0.6, 0.4, 0.2));
-        this.targets.push(target1);
+        const targetMaterial = new gfx.PhongMaterial();
+        targetMaterial.setColor(new gfx.Color(0.6, 0.4, 0.2));
+        target1.material = targetMaterial;
 
         const target2 = gfx.Geometry3Factory.createBox(
             this.targetSize.x, this.targetSize.y, this.targetSize.z);
         this.scene.add(target2);
         target2.position = this.target2Pos;
-        target2.material.setColor(new gfx.Color(0.6, 0.4, 0.2));
-        this.targets.push(target2);
+        target2.material = targetMaterial;
 
         const target3 = gfx.Geometry3Factory.createBox(
             this.targetSize.x, this.targetSize.y, this.targetSize.z);
         this.scene.add(target3);
         target3.position = this.target3Pos;
-        target3.material.setColor(new gfx.Color(0.6, 0.4, 0.2));
-        this.targets.push(target3);
+        target3.material = targetMaterial;
 
         // launcher
         const launcher = gfx.Geometry3Factory.createCylinder(50, 1, 7);
         this.scene.add(launcher);
         launcher.position = new gfx.Vector3(-30, 1.5, -35);
-        launcher.material.setColor(new gfx.Color(0, 0, 0));
+        const launcherMaterial = new gfx.PhongMaterial();
+        launcherMaterial.setColor(new gfx.Color(0, 0, 0));
+        launcher.material = launcherMaterial;
 
         // bird
         this.bird = gfx.Geometry3Factory.createSphere(this.birdRadius);
-        this.bird.material.setColor(gfx.Color.RED);
+        const birdMaterial = new gfx.PhongMaterial();
+        birdMaterial.setColor(gfx.Color.RED);
+        this.bird.material = birdMaterial;
         this.scene.add(this.bird);
-
-        // arrow
-        this.arrow = new Arrow(gfx.Color.YELLOW);
-        this.scene.add(this.arrow);
 
         this.reset();
     }
 
 
+    // Imagine this function and the calcBirdVel function below are some super-complex
+    // functions that we need to debug.  In fact, this function is intentionally written
+    // in a very strange way to make it difficult to follow. :)  How do we know if it is
+    // working?  Printing out the pos and velocity can help a little, but those numbers
+    // will change quickly each frame and are to interpret.  How else can we debug 3D 
+    // graphics routines like these?
     calcBirdPos(t: number): gfx.Vector3 {
         const e = t / 4.0;
         const x = e * 52.0 - 30.0;
@@ -108,6 +114,12 @@ export class ExampleApp extends gfx.GfxApp
     }
 
 
+    reset(): void
+    {
+        this.simulationTime = 0;
+    }
+
+
     // --- Update is called once each frame by the main graphics loop ---
     update(deltaTime: number): void 
     {
@@ -118,40 +130,6 @@ export class ExampleApp extends gfx.GfxApp
         if (this.bird.position.y < 0) {
             this.reset();
         }
-
-        this.arrow.position = this.bird.position;
-        this.arrow.vector = this.calcBirdVel(this.simulationTime);
-
-        this.targets.forEach((target) => {
-            if (this.sphereIntersectsBox(this.bird.position, this.birdRadius, target.position, this.targetSize)) {
-                target.visible = false;
-            }
-        });
     }
 
-    sphereIntersectsBox(spherePos: gfx.Vector3, sphereRad: number, boxPos: gfx.Vector3, boxSize: gfx.Vector3): boolean
-    {
-        const xMin = boxPos.x - boxSize.x/2;
-        const xMax = boxPos.x + boxSize.x/2;
-        const yMin = boxPos.y - boxSize.y/2;
-        const yMax = boxPos.y + boxSize.y/2;
-        const zMin = boxPos.z - boxSize.z/2;
-        const zMax = boxPos.z + boxSize.z/2;
-
-        if (((spherePos.x + sphereRad >= xMin) && (spherePos.x - sphereRad <= xMax)) && 
-            ((spherePos.y + sphereRad >= yMin) && (spherePos.y - sphereRad <= yMax)) &&
-            ((spherePos.z + sphereRad >= zMin) && (spherePos.z - sphereRad <= zMax))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    reset(): void
-    {
-        this.simulationTime = 0;
-        this.targets.forEach((target) => {
-            target.visible = true;
-        });
-    }
 }

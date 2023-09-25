@@ -1,4 +1,12 @@
+/** CSci-4611 Example Code
+ * Copyright 2023+ Regents of the University of Minnesota
+ * Please do not distribute beyond the CSci-4611 course
+ * 
+ * Prof. Dan Keefe (dfk@umn.edu)
+*/
+
 import * as gfx from 'gophergfx'
+
 
 /** 
  * Creates a scene graph Node3 to draw an arrow.  The base of the arrow is located
