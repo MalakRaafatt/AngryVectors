@@ -33,7 +33,7 @@ export class ExampleApp extends gfx.GfxApp
 
         // Setup a camera
         this.camera.setPerspectiveCamera(60, 4/3, 0.01, 100.0);
-        this.camera.position = new gfx.Vector3(0, 8, 10);
+        this.camera.position = new gfx.Vector3(0, 8, 20);
         this.camera.lookAt(new gfx.Vector3(0, 8, 0), gfx.Vector3.UP);
 
         // Create some lights
@@ -48,9 +48,9 @@ export class ExampleApp extends gfx.GfxApp
         this.scene.add(axes);
 
         // ground
-        const ground = gfx.Geometry3Factory.createBox(160, 4, 200);
+        const ground = gfx.Geometry3Factory.createBox(160, 20, 70);
         this.scene.add(ground);
-        ground.position = new gfx.Vector3(0, -2, -50);
+        ground.position = new gfx.Vector3(0, -10, -35);
         const groundMaterial = new gfx.PhongMaterial();
         groundMaterial.setColor(new gfx.Color(0.3, 0.9, 0.4));
         ground.material = groundMaterial;
