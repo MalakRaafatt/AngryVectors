@@ -99,7 +99,7 @@ export class ExampleApp extends gfx.GfxApp
     // functions that we need to debug.  In fact, this function is intentionally written
     // in a very strange way to make it difficult to follow. :)  How do we know if it is
     // working?  Printing out the pos and velocity can help a little, but those numbers
-    // will change quickly each frame and are to interpret.  How else can we debug 3D 
+    // will change quickly each frame and are hard to interpret.  How else can we debug 3D 
     // graphics routines like these?
     calcBirdPos(t: number): gfx.Vector3 {
         const e = t / 4.0;
