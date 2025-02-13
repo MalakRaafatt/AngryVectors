@@ -12,12 +12,16 @@ export class ExampleApp extends gfx.GfxApp
     private arrow = new Arrow();
     private bird = new gfx.Mesh3();
     private birdRadius = 2;
+    private birdVelocity = new gfx.Vector3(0,0,0);
     private targetSize = new gfx.Vector3(3, 12, 20);
     private targets: gfx.Mesh3[] = [];
     private target1Pos = new gfx.Vector3(21, 6, -35);
     private target2Pos = new gfx.Vector3(25, 6, -35);
     private target3Pos = new gfx.Vector3(23, 18, -35);
-
+    private initialBirdPos = new gfx.Vector3(-30, 5, -35);
+    private running = false;
+    private obstacle = new gfx.Mesh3();
+    private obstacleRadius = 5;
 
     // --- Create the ExampleApp class ---
     constructor()
@@ -87,7 +91,14 @@ export class ExampleApp extends gfx.GfxApp
         // bird
         this.bird = gfx.Geometry3Factory.createSphere(this.birdRadius);
         this.bird.material.setColor(gfx.Color.RED);
+        this.bird.position = this.initialBirdPos.clone();
         this.scene.add(this.bird);
+
+        // obstacle
+        this.obstacle = gfx.Geometry3Factory.createSphere(this.obstacleRadius);
+        this.obstacle.material.setColor(gfx.Color.GREEN);
+        this.obstacle.position = new gfx.Vector3(10, 6, -35);
+        this.scene.add(this.obstacle);
 
         // arrow
         this.arrow = new Arrow(gfx.Color.YELLOW);
@@ -96,39 +107,48 @@ export class ExampleApp extends gfx.GfxApp
         this.reset();
     }
 
-
-    calcBirdPos(t: number): gfx.Vector3 {
-        const e = t / 4.0;
-        const x = e * 52.0 - 30.0;
-        const y = 30.0 * (-e * e + 1.2 * e) + 5.0;
-        const z = -35.0;
-        return new gfx.Vector3(x, y, z);
-    }
-
-    calcBirdVel(t: number): gfx.Vector3 {
-        return gfx.Vector3.subtract(this.calcBirdPos(t + 0.5), this.calcBirdPos(t - 0.5));
-    }
-
-
     // --- Update is called once each frame by the main graphics loop ---
     update(deltaTime: number): void 
     {
         this.simulationTime += deltaTime;
 
-        this.bird.position = this.calcBirdPos(this.simulationTime);
+        const prevObstaclePos = this.obstacle.position.clone();
+        this.obstacle.position.y = 15;
+        //this.obstacle.position.y = Math.sin(this.simulationTime)*10 + 15;
+        const obstacleVelocity = gfx.Vector3.subtract(this.obstacle.position, prevObstaclePos);
+        obstacleVelocity.multiplyScalar(1.0/deltaTime);
 
-        if (this.bird.position.y < 0) {
-            this.reset();
+        if (this.running) {
+
+            // TODO: Update bird velocity (vel = vel + acceleration*dt)
+
+            // TODO: Update bird position (pos = pos + vel*dt)
+
+            // TODO: Bounce on the ground
+
+            // TODO: Reset if the velocity is zero
+            if (this.bird.position.y < 0 || this.bird.position.x > 50) {
+                this.reset();
+            }
         }
 
         this.arrow.position = this.bird.position;
-        this.arrow.vector = this.calcBirdVel(this.simulationTime);
+        this.arrow.vector = this.birdVelocity;
+
+        this.handleSphereCollision(this.bird.position, this.birdRadius, this.birdVelocity, this.obstacle.position, this.obstacleRadius, obstacleVelocity)
 
         this.targets.forEach((target) => {
-            if (this.sphereIntersectsBox(this.bird.position, this.birdRadius, target.position, this.targetSize)) {
+            if (target.visible && this.sphereIntersectsBox(this.bird.position, this.birdRadius, target.position, this.targetSize)) {
                 target.visible = false;
+                // TODO: bounce off of the targets
             }
         });
+    }
+
+    handleSphereCollision(posA: gfx.Vector3, radiusA: number, velA: gfx.Vector3, posB: gfx.Vector3, radiusB : number, velB: gfx.Vector3) {
+        // TODO: calculate the normal and distance between spheres
+
+        // TODO: if the distance is less than the radius of two spheres, reflect on the normal
     }
 
     sphereIntersectsBox(spherePos: gfx.Vector3, sphereRad: number, boxPos: gfx.Vector3, boxSize: gfx.Vector3): boolean
@@ -149,11 +169,31 @@ export class ExampleApp extends gfx.GfxApp
         }
     }
 
+    onMouseMove(event: MouseEvent): void {
+        if (!this.running) {
+            const mousePosition = this.getNormalizedDeviceCoordinates(event.x, event.y);
+            this.birdVelocity = gfx.Vector3.subtract(new gfx.Vector3(30*mousePosition.x-5, 30*mousePosition.y+5, -35),this.arrow.position) 
+        }
+    }
+
+    onMouseDown(event: MouseEvent): void {
+        if (!this.running) {
+            this.running = true;
+        }
+    }
+
     reset(): void
     {
+        this.running = false;
+        this.birdVelocity = new gfx.Vector3(0,0,0);
+        this.bird.position = this.initialBirdPos.clone();
         this.simulationTime = 0;
         this.targets.forEach((target) => {
             target.visible = true;
         });
+    }
+
+    onKeyDown(event: KeyboardEvent): void {
+        this.reset();
     }
 }
