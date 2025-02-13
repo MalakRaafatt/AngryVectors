@@ -6,6 +6,7 @@
 */
 
 import * as gfx from 'gophergfx'
+import { Arrow } from './Arrow';
 
 export class ExampleApp extends gfx.GfxApp
 {   
@@ -16,6 +17,7 @@ export class ExampleApp extends gfx.GfxApp
     private target1Pos = new gfx.Vector3(21, 6, -35);
     private target2Pos = new gfx.Vector3(25, 6, -35);
     private target3Pos = new gfx.Vector3(23, 18, -35);
+    private arrow= new Arrow;
 
 
     // --- Create the ExampleApp class ---
@@ -112,6 +114,8 @@ export class ExampleApp extends gfx.GfxApp
     calcBirdVel(t: number): gfx.Vector3 {
         return gfx.Vector3.subtract(this.calcBirdPos(t + 0.5), this.calcBirdPos(t - 0.5));
     }
+    // get bird velocity, create a vector, 
+    // when you hit set invisibility to false
 
 
     reset(): void
@@ -126,7 +130,12 @@ export class ExampleApp extends gfx.GfxApp
         this.simulationTime += deltaTime;
 
         this.bird.position = this.calcBirdPos(this.simulationTime);
-
+        //this.bird.position= this.bird.position + gfx.Vector3(0,-1,0)* deltaTime;
+        //this.bird.position= this.bird.position + this.bird.velocity * deltaTime;
+        const arrow = new Arrow(gfx.Color.YELLOW);
+        this.scene.add(arrow);
+        arrow.position = this.bird.position;
+        //arrow.vector = new gfx.Vector3(this.bird.position.x, this.bird.position.y, this.bird.position.z);
         if (this.bird.position.y < 0) {
             this.reset();
         }
