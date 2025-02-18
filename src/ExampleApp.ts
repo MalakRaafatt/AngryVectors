@@ -120,14 +120,40 @@ export class ExampleApp extends gfx.GfxApp
 
         if (this.running) {
 
+            // Euler Integration
+            const gravity= new gfx.Vector3(0,-10,0); // acceleration
+            
+
+
             // TODO: Update bird velocity (vel = vel + acceleration*dt)
+            this.birdVelocity.add(gfx.Vector3.multiplyScalar(gravity,deltaTime))
 
             // TODO: Update bird position (pos = pos + vel*dt)
-
+            this.bird.position.add(gfx.Vector3.multiplyScalar(this.birdVelocity,deltaTime))
+            //const vector_between= gfx.Vector3.subtract(P1,P2);
+            //const dist= vector_between.length();
             // TODO: Bounce on the ground
+            // when it hits the ground correct pos then bounce
+            // ground is at 0 
+            // must lose speed when it bounces to be realistic
+            if (this.bird.position.y < this.birdRadius) {
+                this.bird.position.y=this.birdRadius; // correction
+                // reflect off the ground
+                //this.birdVelocity.y= this.birdVelocity.y*-1; // if I change -1 to -0.5 it will simulate rolling
+                this.birdVelocity.multiply(new gfx.Vector3(0.9,-0.5,0.9)) //different drag factors so velocity should slow down faster
+                //this.birdVelocity.multiplyScalar(0.5) // to lessen speed or can change -1 to smth smaller
+
+
+
+                
+            }
+
+
+
 
             // TODO: Reset if the velocity is zero
-            if (this.bird.position.y < 0 || this.bird.position.x > 50) {
+            // last or condition
+            if (this.bird.position.y < 0 || this.bird.position.x > 50 || this.birdVelocity.length()<0.1) {
                 this.reset();
             }
         }
@@ -147,8 +173,17 @@ export class ExampleApp extends gfx.GfxApp
 
     handleSphereCollision(posA: gfx.Vector3, radiusA: number, velA: gfx.Vector3, posB: gfx.Vector3, radiusB : number, velB: gfx.Vector3) {
         // TODO: calculate the normal and distance between spheres
-
+        const v = gfx.Vector3.subtract(posA,posB); // vector from the directiom of P2 to P2
+        const dist= v.length();
+        // where the 2 meet 
+        v.normalize();
         // TODO: if the distance is less than the radius of two spheres, reflect on the normal
+        if(dist<radiusA+radiusB)
+        {
+            posA.add(gfx.Vector3.multiplyScalar(v,radiusA+radiusB-dist)) // correction
+            velA.reflect(v);
+            velA.multiplyScalar(0.5)
+        }
     }
 
     sphereIntersectsBox(spherePos: gfx.Vector3, sphereRad: number, boxPos: gfx.Vector3, boxSize: gfx.Vector3): boolean
